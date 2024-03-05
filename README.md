@@ -4,17 +4,17 @@
 
 XUnit utility library that provides harness constructs for improved resource management and performance.
 
-### Dependencies
+## Dependencies
 
-### Why use it?
+## Why use it?
 
-### When to Use
+## When to Use
 
-### Components
+## Components
 
-### Interactions
+## Interactions
 
-### Outcomes
+## Outcomes
 
 ## Implementation Guide
 
