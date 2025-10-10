@@ -149,6 +149,7 @@ ProgramHarness <|-- StartupHarness
 
 ### Sequence — Integration boot
 
+```mermaid
 sequenceDiagram
 participant Test
 participant Harness as ProgramHarness<TProgram>
