@@ -172,7 +172,7 @@ sequenceDiagram
 participant Test
 participant Fixture as AbstractClientFixture
 participant Client as JsonClient/SoapClient
-participant Handler as MockHttpMessageHandler
+participant Handler as Endpoint
 
 Test->>Fixture: constructed (Arrange)
 Fixture->>Client: build contexts with HttpClient(Handler)
