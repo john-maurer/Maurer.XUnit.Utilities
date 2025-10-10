@@ -185,7 +185,7 @@ SP-->>Harness: IConfiguration
 Harness-->>Test: Client / Server / Configuration ready
 ```
 
-### Sequence — Unit-Under-Test (client)
+### Sequence — Software-Under-Test (client)
 
 ```mermaid
 sequenceDiagram
