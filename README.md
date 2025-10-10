@@ -147,7 +147,7 @@ ProgramHarness ..> Settings
 ProgramHarness <|-- StartupHarness
 ```
 
-### Sequence — Integration boot
+### Sequence — Integration Testing (boot)
 
 ```mermaid
 sequenceDiagram
@@ -185,7 +185,7 @@ SP-->>Harness: IConfiguration
 Harness-->>Test: Client / Server / Configuration ready
 ```
 
-### Sequence — unit client
+### Sequence — Unit-Under-Test (client)
 
 ```mermaid
 sequenceDiagram
