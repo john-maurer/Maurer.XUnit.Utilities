@@ -147,22 +147,41 @@ ProgramHarness ..> Settings
 ProgramHarness <|-- StartupHarness
 ```
 
-### Sequence — integration boot
+### Sequence — Integration boot
 
-```mermaid
 sequenceDiagram
 participant Test
 participant Harness as ProgramHarness<TProgram>
 participant WAF as WebApplicationFactory<TProgram>
+participant Builder as IWebHostBuilder
+participant App as App (WebApplication/Startup)
+participant SP as IServiceProvider
 participant Host as TestServer
 participant Http as HttpClient
 
 Test->>Harness: Act()
 Harness->>WAF: WithWebHostBuilder(ConfigureWebHost)
+WAF->>Builder: Create configured builder
+Builder->>Builder: UseEnvironment(Settings.Environment)
+Builder->>Builder: UseSolutionRelativeContentRoot(...)
+Builder->>Builder: ConfigureAppConfiguration(AddJsonFile? + AddEnvironmentVariables)
+Builder->>Builder: ConfigureTestServices(ConfigureServices)
 WAF-->>Harness: returns new factory
+
 Harness->>WAF: CreateClient(ClientOptions)
+WAF->>App: Build host
+App->>SP: Build ServiceProvider (DI)
+App->>Host: Start TestServer
 WAF-->>Harness: HttpClient + TestServer
-Harness-->>Test: Client/Server/Configuration ready
+
+Harness->>WAF: Services (IServiceProvider)
+WAF-->>Harness: IServiceProvider
+Harness->>SP: CreateScope()
+SP-->>Harness: IServiceScope
+Harness->>SP: GetRequiredService<IConfiguration>()
+SP-->>Harness: IConfiguration
+
+Harness-->>Test: Client / Server / Configuration ready
 ```
 
 ### Sequence — unit client
@@ -172,7 +191,7 @@ sequenceDiagram
 participant Test
 participant Fixture as AbstractClientFixture
 participant Client as JsonClient/SoapClient
-participant Handler as Endpoint
+participant Handler as MockHttpMessageHandler
 
 Test->>Fixture: constructed (Arrange)
 Fixture->>Client: build contexts with HttpClient(Handler)
