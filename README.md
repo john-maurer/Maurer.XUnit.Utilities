@@ -122,28 +122,29 @@ Integration wrapper around `WebApplicationFactory<TProgram>` inherting off of `P
 classDiagram
 class AbstractFixture {
   <<abstract>>
-  +Arrange(params object[])
-  +CleanUp()
+  #Arrange(params object[])
+  #CleanUp()
   +Dispose()
 }
 class AbstractHarness~TFixture~ {
   <<abstract>>
   -_fixture : TFixture
-  +Act(params object[])*
+  #Act(params object[])*
 }
 class ApplicationHarness~TProgram~ {
   -_factory : WebApplicationFactory~TProgram~
-  +ConfigureWebHost(builder)~
-  +ConfigureServices(services)~
-  +ClientOptions
-  +Act(...)
+  #ConfigureWebHost(builder)~
+  #ConfigureServices(services)~
+  #ClientOptions
+  #Act(...)
   +Client : HttpClient
   +Server : TestServer
   +Configuration : IConfiguration
 }
 AbstractHarness <|-- ClientHarness
 AbstractFixture <|-- AbstractClientFixture
-ApplicationHarness ..> Settings
+ProgramHarness ..> Settings
+ProgramHarness <|-- StartupHarness
 ```
 
 ### Sequence — integration boot
@@ -151,7 +152,7 @@ ApplicationHarness ..> Settings
 ```mermaid
 sequenceDiagram
 participant Test
-participant Harness as ApplicationHarness<TProgram>
+participant Harness as ProgramHarness<TProgram>
 participant WAF as WebApplicationFactory<TProgram>
 participant Host as TestServer
 participant Http as HttpClient
@@ -218,7 +219,7 @@ using Maurer.XUnit.Utilities;
 using Maurer.XUnit.Utilities.Web;
 using Xunit;
 
-public class WeatherApiTests : ApplicationHarness<Program>, IAsyncLifetime
+public class WeatherApiTests : ProgramHarness<Program>, IAsyncLifetime
 {
     private readonly (string Env, string? AppCfg) _snap;
 
@@ -258,24 +259,19 @@ using Maurer.XUnit.Utilities;
 using Maurer.XUnit.Utilities.Web;
 using Xunit;
 
-public class LegacyApiTests : ApplicationHarness<MyApi.Startup>, IAsyncLifetime
+public class LegacyApiTests : StartupHarness<Startup>, IAsyncLifetime
 {
     private readonly (string Env, string? AppCfg) _snap;
 
-    public LegacyApiTests(WebApplicationFactory<MyApi.Startup> factory) : base(factory)
+    public LegacyApiTests(WebApplicationFactory<Startup> factory) : base(factory)
     {
         _snap = (Settings.Environment, Settings.AppConfiguration);
         Settings.Environment      = "Development";
         Settings.AppConfiguration = "appsettings.Test.json";
     }
 
-    protected override void ConfigureWebHost(IWebHostBuilder builder)
-    {
-        base.ConfigureWebHost(builder);
-        builder.UseStartup<MyApi.Startup>(); // switch to Startup pipeline
-    }
-
     public Task InitializeAsync() { Act(); return Task.CompletedTask; }
+
     public Task DisposeAsync()
     {
         Settings.Environment      = _snap.Env;
@@ -483,7 +479,7 @@ using Xunit;
 
 | Task | How |
 |---|---|
-| Minimal hosting | Add `public partial class Program { }`, inherit `ApplicationHarness<Program>` |
+| Minimal hosting | Add `public partial class Program { }`, inherit `ProgramHarness<Program>` |
 | Startup hosting | Override `ConfigureWebHost` and call `builder.UseStartup<Startup>()` |
 | Add test config | `Settings.AppConfiguration = "appsettings.Test.json"` |
 | Set environment | `Settings.Environment = "Development"` |
@@ -523,7 +519,8 @@ using Xunit;
 /tests
   /MyApi.Tests
     Settings.cs
-    ApplicationHarness.cs
+    ProgramHarness.cs
+    StartupHarness.cs
     AbstractFixture.cs
     AbstractHarness.cs
     Fixtures/
