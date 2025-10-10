@@ -224,7 +224,7 @@ See [Dependencies](#dependencies) section for the `ItemGroup` snippet.
 
 ### Minimal hosting (Program.cs)
 
-**SUT – Program.cs**  
+**Software Under Test (SUT) – Program.cs**  
 
 Add at the bottom so tests can reference the entry point:
 ```csharp
@@ -239,7 +239,7 @@ using Maurer.XUnit.Utilities;
 using Maurer.XUnit.Utilities.Web;
 using Xunit;
 
-public class WeatherApiTests : ProgramHarness<Program>, IAsyncLifetime
+public class WeatherApiTests : ProgramHarness<Program>
 {
     private readonly (string Env, string? AppCfg) _snap;
 
@@ -248,15 +248,6 @@ public class WeatherApiTests : ProgramHarness<Program>, IAsyncLifetime
         _snap = (Settings.Environment, Settings.AppConfiguration);
         Settings.Environment      = "Development";
         Settings.AppConfiguration = "appsettings.Test.json";
-    }
-
-    public Task InitializeAsync() { Act(); return Task.CompletedTask; }
-
-    public Task DisposeAsync()
-    {
-        Settings.Environment      = _snap.Env;
-        Settings.AppConfiguration = _snap.AppCfg;
-        return Task.CompletedTask;
     }
 
     [Fact]
@@ -270,7 +261,7 @@ public class WeatherApiTests : ProgramHarness<Program>, IAsyncLifetime
 
 ### Startup-based apps
 
-If your app uses a `Startup` class, opt into that pipeline by overriding the web host:
+If your app uses a `Startup` class you can use `StartupHarness`:
 
 ```csharp
 using Microsoft.AspNetCore.Hosting;
@@ -279,11 +270,11 @@ using Maurer.XUnit.Utilities;
 using Maurer.XUnit.Utilities.Web;
 using Xunit;
 
-public class LegacyApiTests : StartupHarness<Startup>, IAsyncLifetime
+public class LegacyApiTests : StartupHarness<MyApi.Startup>
 {
     private readonly (string Env, string? AppCfg) _snap;
 
-    public LegacyApiTests(WebApplicationFactory<Startup> factory) : base(factory)
+    public LegacyApiTests(WebApplicationFactory<MyApi.Startup> factory) : base(factory)
     {
         Act(); // boot once
     }
@@ -292,6 +283,47 @@ public class LegacyApiTests : StartupHarness<Startup>, IAsyncLifetime
     {
         base.ConfigureWebHost(builder);
         builder.UseStartup<MyApi.Startup>(); // switch to Startup pipeline
+    }
+
+    [Fact]
+    public async Task Health_is_ok()
+    {
+        var resp = await Client.GetAsync("/health");
+        resp.EnsureSuccessStatusCode();
+        Assert.Equal(HttpStatusCode.OK, resp.StatusCode);
+    }
+}
+```
+
+**Or** opt into that pipeline by overriding the web host from ProgramHarness:
+
+```csharp
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc.Testing;
+using Maurer.XUnit.Utilities;
+using Maurer.XUnit.Utilities.Web;
+using Xunit;
+
+public class LegacyApiTests : StartupHarness<MyApi.Startup>
+{
+    private readonly (string Env, string? AppCfg) _snap;
+
+    public LegacyApiTests(WebApplicationFactory<MyApi.Startup> factory) : base(factory)
+    {
+        Act(); // boot once
+    }
+
+    protected override void ConfigureWebHost(IWebHostBuilder builder)
+    {
+        //...stuff before...
+
+        base.ConfigureWebHost(builder);
+        
+        //...stuff during...
+
+        builder.UseStartup<MyApi.Startup>(); // switch to Startup pipeline
+
+        //...stuff after...
     }
 
     [Fact]
@@ -488,11 +520,24 @@ using Xunit;
 
 - **Adjust client**:
 
+By default, redirects are not allowed and the base address is not defined in the ClientOptions:
+
   ```csharp
-  protected override WebApplicationFactoryClientOptions ClientOptions => new()
+  virtual protected WebApplicationFactoryClientOptions ClientOptions => new()
   {
       AllowAutoRedirect = false,
-      // BaseAddress = new Uri("https://localhost")
+      MaxAutomaticRedirections = 0
+  };
+  ```
+
+This can be overridden in derived implementations:
+
+  ```csharp
+  override protected WebApplicationFactoryClientOptions ClientOptions => new()
+  {
+      AllowAutoRedirect = true,
+      MaxAutomaticRedirections = 5,
+      BaseAddress = new Uri("https://localhost")
   };
   ```
 
