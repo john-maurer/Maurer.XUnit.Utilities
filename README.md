@@ -285,18 +285,21 @@ public class LegacyApiTests : StartupHarness<Startup>, IAsyncLifetime
 
     public LegacyApiTests(WebApplicationFactory<Startup> factory) : base(factory)
     {
-        _snap = (Settings.Environment, Settings.AppConfiguration);
-        Settings.Environment      = "Development";
-        Settings.AppConfiguration = "appsettings.Test.json";
+        Act(); // boot once
     }
 
-    public Task InitializeAsync() { Act(); return Task.CompletedTask; }
-
-    public Task DisposeAsync()
+    protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
-        Settings.Environment      = _snap.Env;
-        Settings.AppConfiguration = _snap.AppCfg;
-        return Task.CompletedTask;
+        base.ConfigureWebHost(builder);
+        builder.UseStartup<MyApi.Startup>(); // switch to Startup pipeline
+    }
+
+    [Fact]
+    public async Task Health_is_ok()
+    {
+        var resp = await Client.GetAsync("/health");
+        resp.EnsureSuccessStatusCode();
+        Assert.Equal(HttpStatusCode.OK, resp.StatusCode);
     }
 }
 ```
