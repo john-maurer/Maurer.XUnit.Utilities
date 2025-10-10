@@ -2,7 +2,7 @@
 
 XUnit utility library that provides harness constructs for improved resource management, determinism, and speed for both classic unit testing and full in-memory integration testing.
 
-[![Build](https://github.com/OWNER/REPO/actions/workflows/build.yml/badge.svg)](https://github.com/OWNER/REPO/actions/workflows/build.yml)
+[![Build](https://github.com/john-maurer/Maurer.XUnit.Utilities/actions/workflows/build.yml/badge.svg)](https://github.com/OWNER/REPO/actions/workflows/build.yml)
 ![Target Frameworks](https://img.shields.io/badge/.NET-8%20%7C%209-512BD4?logo=.net)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
