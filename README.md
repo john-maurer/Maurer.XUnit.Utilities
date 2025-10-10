@@ -131,7 +131,7 @@ class AbstractHarness~TFixture~ {
   -_fixture : TFixture
   #Act(params object[])*
 }
-class ApplicationHarness~TProgram~ {
+class ProgramHarness~TProgram~ {
   -_factory : WebApplicationFactory~TProgram~
   #ConfigureWebHost(builder)~
   #ConfigureServices(services)~
