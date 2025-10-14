@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Xunit;
 
 namespace Maurer.XUnit.Utilities.Integration
@@ -30,23 +31,46 @@ namespace Maurer.XUnit.Utilities.Integration
         virtual protected void ConfigureWebHost(IWebHostBuilder builder)
         {
             var environment = string.IsNullOrWhiteSpace(Settings.Environment)
-                ? "Development"
+                ? Environments.Development
                 : Settings.Environment;
 
             builder.UseEnvironment(environment);
-            builder.UseSolutionRelativeContentRoot(AppDomain.CurrentDomain.BaseDirectory);
-            builder.ConfigureAppConfiguration((context, configuration) => 
+            builder.ConfigureAppConfiguration((context, configuration) =>
             {
+                var env = context.HostingEnvironment;
+
+                // 1) Pick a base config directory:
+                //    CONFIG_DIR env var > <contentRoot>/config (if it exists) > <contentRoot>
+                string configurationDirectory =
+                    Environment.GetEnvironmentVariable("CONFIG_DIR")
+                    ?? (Directory.Exists(Path.Combine(env.ContentRootPath, "config"))
+                            ? Path.Combine(env.ContentRootPath, "config")
+                            : env.ContentRootPath);
+
+                // 2) If a file name is specified (e.g., "appsettings.json"), load it.
                 if (!string.IsNullOrWhiteSpace(Settings.AppConfiguration))
                 {
-                    configuration.AddJsonFile
-                    (
-                        ConfigMapFileProvider.FromRelativePath(AppDomain.CurrentDomain.BaseDirectory),
-                        Settings.AppConfiguration,
-                        optional: true,
-                        reloadOnChange: true
-                    );
+                    // Respect absolute paths; otherwise look under configurationDirectory
+                    var configurationPath = Path.IsPathRooted(Settings.AppConfiguration)
+                        ? Settings.AppConfiguration
+                        : Path.Combine(configurationDirectory, Settings.AppConfiguration);
+
+                    configuration.AddJsonFile(configurationPath, optional: true, reloadOnChange: true);
                 }
+
+                // 3) Support key-per-file (e.g., Kubernetes ConfigMap/Secret mounted as files).
+                var keyPerFileDir =
+                    Environment.GetEnvironmentVariable("CONFIG_KEYS_DIR") // allow override
+                    ?? Path.Combine(env.ContentRootPath, "config-keys");
+
+                if (Directory.Exists(keyPerFileDir))
+                {
+                    // Requires the package: Microsoft.Extensions.Configuration.KeyPerFile (8.x/9.x)
+                    configuration.AddKeyPerFile(directoryPath: keyPerFileDir, optional: true, reloadOnChange: true);
+                }
+
+                // Optional: environment variables can override everything:
+                // config.AddEnvironmentVariables(prefix: "APP_");
             });
         }
 

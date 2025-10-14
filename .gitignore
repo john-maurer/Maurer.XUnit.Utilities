@@ -7,3 +7,6 @@ Maurer.XUnit.Utilities/Maurer.XUnit.Utilities/.vs/*
 Maurer.XUnit.Utilities/.vs/*
 Maurer.XUnit.Utilities/UnitTesting/bin/*
 Maurer.XUnit.Utilities/UnitTesting/obj/*
+.config/
+Maurer.XUnit.Utilities/.config/
+artifacts/
