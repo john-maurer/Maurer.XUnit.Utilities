@@ -21,7 +21,7 @@ namespace Maurer.XUnit.Utilities
         /// Writes to the Test Explorer
         /// </summary>
 
-        protected ITestOutputHelper _outputHelper;
+        protected ITestOutputHelper? _outputHelper;
 
         /// <summary>
         /// Interface for defining an action taken on a unit under test

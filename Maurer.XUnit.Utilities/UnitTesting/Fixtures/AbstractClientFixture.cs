@@ -24,9 +24,9 @@ namespace UnitTesting.Fixtures
             ProxyRequiredClient = new HttpClient(MockMessageHandler((HttpStatusCode)407, JsonConvert.SerializeObject(new object())));
         }
 
-        public HttpClient OKClient { get; protected set; }
-        public HttpClient UnauthorizedClient { get; protected set; }
-        public HttpClient ForbiddenClient { get; protected set; }
-        public HttpClient ProxyRequiredClient { get; protected set; }
+        public HttpClient OKClient { get; protected set; } = null!;
+        public HttpClient UnauthorizedClient { get; protected set; } = null!;
+        public HttpClient ForbiddenClient { get; protected set; } = null!;
+        public HttpClient ProxyRequiredClient { get; protected set; } = null!;
     }
 }

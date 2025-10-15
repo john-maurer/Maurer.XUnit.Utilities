@@ -16,9 +16,9 @@ namespace UnitTesting.Fixtures
 
         public SoapClientFixture() => Arrange();
 
-        public SoapClient OkContext { get; private set; }
-        public SoapClient UnauthorizedContext { get; private set; }
-        public SoapClient ForbiddenContext { get; private set; }
-        public SoapClient ProxyRequiredContext { get; private set; }
+        public SoapClient? OkContext { get; private set; }
+        public SoapClient? UnauthorizedContext { get; private set; }
+        public SoapClient? ForbiddenContext { get; private set; }
+        public SoapClient? ProxyRequiredContext { get; private set; }
     }
 }

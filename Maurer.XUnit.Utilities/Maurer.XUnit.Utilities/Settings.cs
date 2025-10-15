@@ -22,7 +22,7 @@
         /// Relative path to the application configuration JSON file
         /// </summary>
 
-        static public string AppConfiguration { get; set; }
+        static public string AppConfiguration { get; set; } = string.Empty;
     }
 
 }

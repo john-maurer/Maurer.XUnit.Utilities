@@ -18,10 +18,7 @@ namespace UnitTesting.Harnesses
 
     public class ClientHarness<TContext> : AbstractHarness<TContext> where TContext : AbstractClientFixture
     {
-        protected override async Task Act(params object[] parameters)
-        {
-            
-        }
+        protected override Task Act(params object[] parameters) => Task.CompletedTask;
 
         protected Payload Payload { get; set; }
 

@@ -16,9 +16,9 @@ namespace UnitTesting.Fixtures
 
         public JsonClientFixture() => Arrange();
 
-        public JsonClient OkContext { get; private set; }
-        public JsonClient UnauthorizedContext { get; private set; }
-        public JsonClient ForbiddenContext { get; private set; }
-        public JsonClient ProxyRequiredContext { get; private set; }
+        public JsonClient? OkContext { get; private set; }
+        public JsonClient? UnauthorizedContext { get; private set; }
+        public JsonClient? ForbiddenContext { get; private set; }
+        public JsonClient? ProxyRequiredContext { get; private set; }
     }
 }
